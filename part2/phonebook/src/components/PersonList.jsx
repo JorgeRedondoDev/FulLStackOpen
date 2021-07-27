@@ -1,15 +1,13 @@
 import React from "react";
+import axios from "../services/axios";
 
-const PersonList = (props) => {
+const PersonList = ({ data, deletePerson }) => {
   return (
     <div>
-      {props.persons
-        .filter((e) => e.name.includes(props.filter))
-        .map((el) => (
-          <p key={el.id}>
-            {el.name} / {el.number}
-          </p>
-        ))}
+      <p>
+        {data.name} / {data.number}
+        <button onClick={deletePerson}>Delete</button>
+      </p>
     </div>
   );
 };

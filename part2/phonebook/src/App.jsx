@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import FilterPerson from "./components/FilterPerson";
 import AddPerson from "./components/AddPerson";
 import PersonList from "./components/PersonList";
-import axios from "axios";
+import axios from "./services/axios";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -11,10 +11,8 @@ const App = () => {
   const [filter, setFilter] = useState("");
 
   useEffect(() => {
-    console.log("effect");
-    axios.get("http://localhost:3001/persons").then((response) => {
-      console.log("promise fulfilled");
-      setPersons(response.data);
+    axios.getAll().then((response) => {
+      setPersons(response);
     });
   }, []);
 
@@ -30,18 +28,36 @@ const App = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const updateUsers = [
-      ...persons,
-      {
-        name: newName,
-        phone: newName,
-      },
-    ];
-    persons.some((e) => e.name === newName)
-      ? window.alert(`${newName} is already added to phonebook`)
-      : setPersons(updateUsers);
+    const addPersons = {
+      name: newName,
+      number: newPhone,
+      id: persons.length + 1,
+    };
 
-    setNewName("");
+    persons.some((a) => a.name === newName)
+      ? askForUpdate(persons.find((e) => e.name === newName).id, addPersons)
+      : axios.create(addPersons).then((response) => {
+          setPersons(persons.concat(response));
+        });
+  };
+
+  const askForUpdate = (id, update) => {
+    if (
+      window.confirm(
+        `'${update.name}' is already added to phonebook, replace the olde number with a new one?`
+      )
+    ) {
+      axios.update(id, update).then((re) => {
+        console.log("added");
+      });
+    }
+  };
+  const deletePerson = (id, name) => {
+    if (window.confirm(`Delete '${name}'?`)) {
+      axios.eliminar(id).then((re) => {
+        console.log("rip");
+      });
+    }
   };
 
   return (
@@ -56,7 +72,16 @@ const App = () => {
         handleSubmit={handleSubmit}
       />
       <h2>Numbers</h2>
-      <PersonList persons={persons} filter={filter} />
+
+      {persons
+        .filter((e) => e.name.includes(filter))
+        .map((el) => (
+          <PersonList
+            key={el.id}
+            data={el}
+            deletePerson={() => deletePerson(el.id, el.name)}
+          />
+        ))}
     </div>
   );
 };
