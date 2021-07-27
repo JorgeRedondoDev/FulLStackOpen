@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import FilterPerson from "./components/FilterPerson";
 import AddPerson from "./components/AddPerson";
 import PersonList from "./components/PersonList";
+import Notification from "./components/message";
 import axios from "./services/axios";
 
 const App = () => {
@@ -9,6 +10,7 @@ const App = () => {
   const [newName, setNewName] = useState("");
   const [newPhone, setNewPhone] = useState("");
   const [filter, setFilter] = useState("");
+  const [messege, setmessege] = useState("");
 
   useEffect(() => {
     axios.getAll().then((response) => {
@@ -38,6 +40,10 @@ const App = () => {
       ? askForUpdate(persons.find((e) => e.name === newName).id, addPersons)
       : axios.create(addPersons).then((response) => {
           setPersons(persons.concat(response));
+          setmessege(`Has been added`);
+          setTimeout(() => {
+            setmessege(null);
+          }, 5000);
         });
   };
 
@@ -55,7 +61,10 @@ const App = () => {
   const deletePerson = (id, name) => {
     if (window.confirm(`Delete '${name}'?`)) {
       axios.eliminar(id).then((re) => {
-        console.log("rip");
+        setmessege(`Note '${name}' was already removed from server`);
+        setTimeout(() => {
+          setmessege(null);
+        }, 5000);
       });
     }
   };
@@ -63,6 +72,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={messege} />
       <FilterPerson handleChangeFilter={handleChangeFilter} />
       <h2>Add a new </h2>
 
